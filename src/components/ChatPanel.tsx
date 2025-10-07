@@ -12,6 +12,7 @@ import {
   ArtifactTitle,
 } from '@/components/ai-elements/artifact';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { ChatMessage, ActionResult } from '../lib/types';
 import { ActionLog } from './ActionLog';
 
@@ -116,7 +117,12 @@ export function ChatPanel({ messages, onSend, isProcessing, actionLog }: ChatPan
                 <div className="role">{isAssistant ? 'Assistant' : 'You'}</div>
                 <div>{message.content}</div>
                 {message.actions ? <ActionLog actions={message.actions} compact /> : null}
-                {message.error ? <div className="action-log-entry">Error: {message.error}</div> : null}
+                {message.error ? (
+                  <Alert variant="destructive" role="alert">
+                    <AlertTitle>Assistant error</AlertTitle>
+                    <AlertDescription>{message.error}</AlertDescription>
+                  </Alert>
+                ) : null}
                 {isAssistant ? (
                   <Actions className="message-actions">
                     <Action
@@ -136,7 +142,7 @@ export function ChatPanel({ messages, onSend, isProcessing, actionLog }: ChatPan
           <textarea
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="Ask for scaffolding, dependencies, debugging help, or command execution"
+            placeholder="Ask for Next.js 15 + Tailwind + shadcn/ui scaffolds, dependencies, debugging help, or command execution"
           />
           <button type="submit" disabled={isProcessing}>
             {isProcessing ? 'Processing…' : 'Send'}

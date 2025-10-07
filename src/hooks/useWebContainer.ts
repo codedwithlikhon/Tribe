@@ -30,7 +30,7 @@ const DEFAULT_FILES: FileSystemTree = {
   },
   'README.md': {
     file: {
-      contents: `# Welcome to the Tribe WebContainer workspace\n\n- Ask the assistant to scaffold a project\n- Run commands such as \`npm install\` or \`npm run dev\`\n- Open the preview once a dev server boots\n`,
+      contents: `# Welcome to the Tribe WebContainer workspace\n\n- Ask the assistant to scaffold a Next.js 15 + Tailwind CSS + shadcn/ui project with Geist styling\n- Run commands such as \`npm install\` or \`npm run dev\`\n- Open the preview once a dev server boots\n`,
     },
   },
   src: {
