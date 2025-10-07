@@ -58,7 +58,6 @@ export function WorkspaceApp({ onExit }: WorkspaceAppProps) {
       try {
         const payload: ChatRequestPayload = {
           messages: messages
-            .filter((msg) => msg.role !== 'system')
             .map((msg) => ({ role: msg.role, content: msg.content }))
             .concat({ role: 'user', content: message }),
           projectSummary: {
