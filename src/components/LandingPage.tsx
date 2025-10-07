@@ -1,5 +1,6 @@
 import { ArrowRightIcon, Code2Icon, MessageCircleIcon, MonitorSmartphoneIcon, SparklesIcon } from 'lucide-react';
 import logoUrl from '../assets/star-of-david.svg';
+import { SurfaceShowcase } from './SurfaceShowcase';
 
 interface LandingPageProps {
   onLaunch: () => void;
@@ -278,6 +279,8 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
             </div>
           </aside>
         </section>
+
+        <SurfaceShowcase />
 
         <section className="landing-anyone">
           <div className="landing-anyone-card">
