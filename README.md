@@ -100,6 +100,17 @@ npm run preview
 - Enhance the editor by swapping the textarea for Monaco or CodeMirror.
 - Stream AI responses token-by-token by switching to `streamObject` in the API.
 
+## AI Elements quick start (optional)
+
+If you are building a separate Next.js front end that consumes the Tribe API, you can scaffold chat interfaces with the AI Elements component library. The essentials:
+
+- **Prerequisites** – Node.js 18+, a Next.js project with the [AI SDK](https://ai-sdk.dev), `shadcn/ui` initialized, and Tailwind CSS in CSS variables mode.
+- **Install everything** – `npx ai-elements@latest`
+- **Install specific pieces** – `npx ai-elements@latest add <component>` (e.g. `message`, `conversation`, `code-block`).
+- **Alternative via shadcn** – `npx shadcn@latest add https://registry.ai-sdk.dev/registry.json`
+
+After installation you can render chat UIs using the exported primitives such as `Conversation`, `Message`, and `Response` alongside `useChat` from `@ai-sdk/react`.
+
 ## Troubleshooting
 
 | Issue | Resolution |
