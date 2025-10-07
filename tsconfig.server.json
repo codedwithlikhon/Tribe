@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/server",
+    "module": "ESNext",
+    "target": "ES2020",
+    "noEmit": false,
+    "declaration": false,
+    "allowSyntheticDefaultImports": true,
+    "types": ["node"]
+  },
+  "include": ["server/**/*.ts"],
+  "exclude": ["src", "node_modules"]
+}
