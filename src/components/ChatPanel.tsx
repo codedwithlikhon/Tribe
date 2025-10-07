@@ -1,4 +1,6 @@
 import { FormEvent, useState } from 'react';
+import { ThumbsUpIcon } from 'lucide-react';
+import { Actions, Action } from '@/components/ai-elements/actions';
 import type { ChatMessage, ActionResult } from '../lib/types';
 import { ActionLog } from './ActionLog';
 
@@ -11,6 +13,19 @@ interface ChatPanelProps {
 
 export function ChatPanel({ messages, onSend, isProcessing, actionLog }: ChatPanelProps) {
   const [draft, setDraft] = useState('');
+  const [likedMessages, setLikedMessages] = useState<Set<string>>(() => new Set());
+
+  const handleToggleLike = (messageId: string) => {
+    setLikedMessages((prev) => {
+      const next = new Set(prev);
+      if (next.has(messageId)) {
+        next.delete(messageId);
+      } else {
+        next.add(messageId);
+      }
+      return next;
+    });
+  };
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -27,14 +42,30 @@ export function ChatPanel({ messages, onSend, isProcessing, actionLog }: ChatPan
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <h3>Chatbot</h3>
         <div className="chat-messages">
-          {messages.map((message) => (
-            <div key={message.id} className="chat-message">
-              <div className="role">{message.role === 'assistant' ? 'Assistant' : 'You'}</div>
-              <div>{message.content}</div>
-              {message.actions ? <ActionLog actions={message.actions} compact /> : null}
-              {message.error ? <div className="action-log-entry">Error: {message.error}</div> : null}
-            </div>
-          ))}
+          {messages.map((message) => {
+            const isAssistant = message.role === 'assistant';
+            const isLiked = likedMessages.has(message.id);
+
+            return (
+              <div key={message.id} className="chat-message">
+                <div className="role">{isAssistant ? 'Assistant' : 'You'}</div>
+                <div>{message.content}</div>
+                {message.actions ? <ActionLog actions={message.actions} compact /> : null}
+                {message.error ? <div className="action-log-entry">Error: {message.error}</div> : null}
+                {isAssistant ? (
+                  <Actions className="message-actions">
+                    <Action
+                      label={isLiked ? 'Remove like' : 'Like'}
+                      aria-pressed={isLiked}
+                      onClick={() => handleToggleLike(message.id)}
+                    >
+                      <ThumbsUpIcon aria-hidden="true" className="size-4" />
+                    </Action>
+                  </Actions>
+                ) : null}
+              </div>
+            );
+          })}
         </div>
         <form className="chat-input" onSubmit={handleSubmit}>
           <textarea

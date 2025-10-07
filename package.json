@@ -1,7 +1,7 @@
 {
   "name": "tribe-ai-chatbot",
   "version": "1.0.0",
-  "description": "AI-powered chatbot that combines Google Generative AI with the Tribe WebContainer runtime for in-browser code execution.",
+  "description": "AI-powered chatbot that combines Gemini models with the Tribe WebContainer runtime for in-browser code execution.",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,12 +14,13 @@
     "preview": "npm run build && concurrently \"node dist/server/index.js\" \"vite preview --host\""
   },
   "dependencies": {
-    "@ai-sdk/google": "^1.1.26",
     "@types/node": "^20.11.30",
     "@webcontainer/api": "^1.1.9",
     "ai": "^3.2.15",
+    "ai-sdk-provider-gemini-cli": "^1.1.2",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "lucide-react": "^0.545.0",
     "morgan": "^1.10.0",
     "path-browserify": "^1.0.1",
     "react": "^18.2.0",
@@ -36,8 +37,8 @@
     "@types/uuid": "^9.0.7",
     "@vitejs/plugin-react": "^4.2.1",
     "concurrently": "^8.2.0",
+    "tsx": "^4.7.1",
     "typescript": "^5.4.5",
-    "vite": "^5.1.6",
-    "tsx": "^4.7.1"
+    "vite": "^5.1.6"
   }
 }

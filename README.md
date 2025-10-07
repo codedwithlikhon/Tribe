@@ -1,13 +1,13 @@
 # Tribe AI Chatbot
 
-An AI-powered developer companion that combines the [Tribe WebContainer Runtime](https://docs.tribe.sh/) with the [Google Generative AI SDK](https://ai-sdk.dev) to deliver a full-featured, in-browser coding workspace. Users can chat with the assistant to scaffold projects, run commands, edit files, and preview live applications – all without leaving the browser.
+An AI-powered developer companion that combines the [Tribe WebContainer Runtime](https://docs.tribe.sh/) with the [AI SDK Gemini CLI provider](https://ai-sdk.dev) to deliver a full-featured, in-browser coding workspace. Users can chat with the assistant to scaffold projects, run commands, edit files, and preview live applications – all without leaving the browser.
 
-> **Note**: The assistant requires a valid `GOOGLE_GENERATIVE_AI_API_KEY` to access Gemini 2.5 Flash. Without an API key the API server will respond with a `503` status code.
+> **Note**: The assistant requires either a configured `GEMINI_API_KEY`/`GOOGLE_GENERATIVE_AI_API_KEY` or local Gemini CLI OAuth credentials. Without valid credentials the API server will respond with a `503` status code.
 
 ## Features
 
 - **WebContainer orchestration** – Boot, manage, and teardown a WebContainer workspace directly from the chat UI.
-- **AI-guided workflows** – Uses Google Gemini 2.5 Flash via the `@ai-sdk/google` provider and structured outputs to generate actionable instructions.
+- **AI-guided workflows** – Uses Gemini 2.5 Flash via the `ai-sdk-provider-gemini-cli` provider and structured outputs to generate actionable instructions.
 - **File system management** – Create, edit, and delete files/folders using natural language commands or the built-in editor.
 - **Command execution** – Run arbitrary shell commands (`npm install`, `npm run dev`, etc.) with realtime terminal output.
 - **Live preview** – Automatically capture dev-server previews and stream them inside the app.
@@ -42,17 +42,22 @@ npm install
 
 ### 2. Configure environment variables
 
-Create a `.env` file at the project root and populate it with a valid Google Generative AI API key:
+Create a `.env` file at the project root and supply your preferred authentication method:
 
-```bash
-cp .env.example .env
-```
+- **API key (recommended)**
 
-Edit `.env`:
+  ```bash
+  GEMINI_API_KEY=your_api_key_here
+  GEMINI_AUTH_TYPE=api-key
+  ```
 
-```bash
-GOOGLE_GENERATIVE_AI_API_KEY=your_api_key_here
-```
+- **Gemini CLI OAuth (requires the [Gemini CLI](https://github.com/google/generative-ai-js/tree/main/packages/ai-sdk-provider-gemini-cli))**
+
+  ```bash
+  GEMINI_AUTH_TYPE=oauth-personal
+  ```
+
+If you are migrating from earlier versions you can continue to use `GOOGLE_GENERATIVE_AI_API_KEY`; it is treated as a fallback for `GEMINI_API_KEY`.
 
 ### 3. Start the development servers
 
@@ -104,7 +109,7 @@ npm run preview
 
 | Issue | Resolution |
 | ----- | ---------- |
-| `503` from `/api/chat` | Ensure `GOOGLE_GENERATIVE_AI_API_KEY` is configured before starting the server. |
+| `503` from `/api/chat` | Ensure Gemini credentials are configured (`GEMINI_API_KEY`/`GOOGLE_GENERATIVE_AI_API_KEY` or `GEMINI_AUTH_TYPE=oauth-personal`). |
 | Commands hang or preview missing | Check the terminal panel for output and confirm the command includes `-- --host` when using dev servers like Vite. |
 | Missing dependencies | Ask the assistant to run `npm install <package>` or execute the command manually via chat. |
 
