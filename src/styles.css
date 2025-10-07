@@ -97,9 +97,17 @@ button {
 }
 
 .landing-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   font-weight: 700;
   font-size: 1.25rem;
   letter-spacing: -0.02em;
+}
+
+.landing-logo img {
+  width: 32px;
+  height: 32px;
 }
 
 .landing-nav-actions {

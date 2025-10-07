@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Star of David Icon</title>
+  <defs>
+    <linearGradient id="starGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+  </defs>
+  <path d="M32 4L55 44H9L32 4Z" fill="url(#starGradient)" />
+  <path d="M32 60L9 20H55L32 60Z" fill="url(#starGradient)" />
+</svg>
