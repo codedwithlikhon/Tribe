@@ -8,6 +8,7 @@ import { createGeminiProvider } from 'ai-sdk-provider-gemini-cli';
 import { createGroq } from '@ai-sdk/groq';
 import { z } from 'zod';
 import { assistantResponseSchema, chatRequestSchema, ChatRequest } from './types';
+import { baseSystemPrompt } from './lib/.server/llm/prompts';
 
 const PORT = Number(process.env.PORT ?? 8787);
 
@@ -70,8 +71,6 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 app.use(morgan('dev'));
-
-const baseSystemPrompt = `You are Tribe, an AI agent that orchestrates a WebContainer workspace.\n\nYou can respond with a structured JSON payload describing actions to perform: write files, delete paths, and run commands. The user has a full Node.js environment with npm available.\n\nGuidelines:\n- Prefer small, incremental changes.\n- Run \\"npm install\\" before using a dependency.\n- Use runCommand for commands (install, build, start).\n- Always provide a concise natural language explanation in \\"reply\\".\n- File paths are relative to the project root.\n- Never include secrets.\n- Validate inputs and keep code safe.`;
 
 function buildContextSummary(request: ChatRequest): string {
   const dependencyList = request.projectSummary.dependencies.length

@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { WebContainer, WebContainerProcess, FileSystemTree } from '@webcontainer/api';
 import { dirname } from 'path-browserify';
 import type { ActionResult, DirectoryNode, FileNode, FileSummary } from '../lib/types';
+import { bootWebcontainer, teardownWebcontainer } from '../lib/webcontainer.client';
+import { DEFAULT_TERMINAL_DIMENSIONS } from '@/utils/constants';
+import { cleanStackTrace } from '@/utils/stacktrace';
 
 const DEFAULT_FILES: FileSystemTree = {
   'package.json': {
@@ -180,8 +183,7 @@ export function useWebContainer() {
     }
     setStatus('booting');
     try {
-      const webcontainerModule = await import('@webcontainer/api');
-      const webcontainer = await webcontainerModule.WebContainer.boot();
+      const webcontainer = await bootWebcontainer();
       instanceRef.current = webcontainer;
 
       webcontainer.on('server-ready', (_port, url) => {
@@ -200,7 +202,7 @@ export function useWebContainer() {
       return webcontainer;
     } catch (err) {
       console.error('Failed to boot WebContainer', err);
-      setError(err instanceof Error ? err.message : String(err));
+      setError(cleanStackTrace(err));
       setStatus('error');
       throw err;
     }
@@ -217,7 +219,7 @@ export function useWebContainer() {
         processRef.current = null;
       }
       if (instanceRef.current) {
-        instanceRef.current.teardown();
+        void teardownWebcontainer();
         instanceRef.current = null;
       }
     };
@@ -272,10 +274,7 @@ export function useWebContainer() {
       const shellCommand = ['-lc', command];
       const process = await instance.spawn('bash', shellCommand, {
         cwd,
-        terminal: {
-          cols: 120,
-          rows: 40,
-        },
+        terminal: DEFAULT_TERMINAL_DIMENSIONS,
       });
       processRef.current = process;
 
