@@ -24,6 +24,12 @@ const featureHighlights = [
     description:
       'See the app you are building update instantly inside the browser without managing local environments.',
   },
+  {
+    icon: ArrowRightIcon,
+    title: 'Browser-native WebContainers',
+    description:
+      'Harness the WebContainer API to give AI secure, instant access to a full Node.js stack—no virtual machines, installs, or latency.',
+  },
 ];
 
 export function LandingPage({ onLaunch }: LandingPageProps) {
@@ -131,6 +137,67 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
               </div>
             </article>
           ))}
+        </section>
+
+        <section className="landing-webcontainer">
+          <div className="landing-webcontainer-copy">
+            <span className="landing-eyebrow">AI-powered full-stack</span>
+            <h2>Build, run, and deploy without leaving your browser</h2>
+            <p>
+              WebContainers give Tribe a secure, low-latency sandbox that runs entirely in the browser. Your AI teammate can
+              scaffold projects, manage Node.js dependencies, and execute terminal commands instantly—without virtual machines
+              or remote environments.
+            </p>
+
+            <ul>
+              <li>
+                AI agents get first-class access to a Node.js server, filesystem, package manager, and dev terminal directly in
+                the tab.
+              </li>
+              <li>Support the entire JavaScript ecosystem with WebContainer API and the Vercel AI SDK.</li>
+              <li>Deploy production-ready experiences as soon as the preview feels right.</li>
+            </ul>
+
+            <div className="landing-webcontainer-links">
+              <a
+                className="secondary-button"
+                href="https://webcontainers.io/api"
+                target="_blank"
+                rel="noreferrer noopener"
+              >
+                Explore the WebContainer API
+              </a>
+              <a className="ghost-button" href="https://sdk.vercel.ai/" target="_blank" rel="noreferrer noopener">
+                Learn about the Vercel AI SDK
+              </a>
+            </div>
+          </div>
+
+          <aside className="landing-webcontainer-aside" aria-hidden="true">
+            <div className="landing-webcontainer-card">
+              <header>
+                <span className="landing-preview-chip">WebContainer runtime</span>
+              </header>
+              <div className="landing-webcontainer-steps">
+                <div>
+                  <h3>Prompt</h3>
+                  <p>Describe the app you want and Tribe plans the stack automatically.</p>
+                </div>
+                <div>
+                  <h3>Run</h3>
+                  <p>Execute npm, pnpm, or bun commands with zero-install tooling.</p>
+                </div>
+                <div>
+                  <h3>Edit</h3>
+                  <p>Inspect files, tweak code, and see live feedback in the preview.</p>
+                </div>
+                <div>
+                  <h3>Deploy</h3>
+                  <p>Ship straight from the browser with production-ready builds.</p>
+                </div>
+              </div>
+            </div>
+          </aside>
         </section>
 
         <section className="landing-design-mode">
