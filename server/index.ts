@@ -3,6 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import { generateObject } from 'ai';
 import type { LanguageModel } from 'ai';
+import { createCohere } from '@ai-sdk/cohere';
 import { createGeminiProvider } from 'ai-sdk-provider-gemini-cli';
 import { createGroq } from '@ai-sdk/groq';
 import { z } from 'zod';
@@ -11,9 +12,10 @@ import { assistantResponseSchema, chatRequestSchema, ChatRequest } from './types
 const PORT = Number(process.env.PORT ?? 8787);
 
 type GeminiAuthType = 'oauth-personal' | 'api-key' | 'gemini-api-key';
-type ProviderName = 'gemini' | 'groq';
+type ProviderName = 'gemini' | 'groq' | 'cohere';
 
-const providerName = (process.env.AI_PROVIDER ?? 'gemini') as ProviderName;
+const providerNameEnv = process.env.AI_PROVIDER;
+const providerName: ProviderName = providerNameEnv === 'groq' || providerNameEnv === 'cohere' ? providerNameEnv : 'gemini';
 
 const geminiAuthTypeEnv = process.env.GEMINI_AUTH_TYPE as GeminiAuthType | undefined;
 const geminiApiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY;
@@ -23,6 +25,9 @@ const missingGeminiApiKey = geminiAuthType !== 'oauth-personal' && !geminiApiKey
 const groqApiKey = process.env.GROQ_API_KEY;
 const groqModelName = process.env.GROQ_MODEL ?? 'deepseek-r1-distill-llama-70b';
 
+const cohereApiKey = process.env.COHERE_API_KEY;
+const cohereModelName = process.env.COHERE_MODEL ?? 'command-r-plus';
+
 let modelFactory: (() => LanguageModel) | null = null;
 
 if (providerName === 'groq') {
@@ -31,6 +36,13 @@ if (providerName === 'groq') {
   } else {
     const groqProvider = createGroq({ apiKey: groqApiKey });
     modelFactory = () => groqProvider(groqModelName) as unknown as LanguageModel;
+  }
+} else if (providerName === 'cohere') {
+  if (!cohereApiKey) {
+    console.warn('Missing COHERE_API_KEY environment variable. Configure COHERE_API_KEY to enable Cohere responses.');
+  } else {
+    const cohereProvider = createCohere({ apiKey: cohereApiKey });
+    modelFactory = () => cohereProvider(cohereModelName) as unknown as LanguageModel;
   }
 } else {
   if (missingGeminiApiKey) {

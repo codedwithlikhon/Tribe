@@ -2,13 +2,13 @@
 
 An AI-powered developer companion that combines the [Tribe WebContainer Runtime](https://docs.tribe.sh/) with the [AI SDK Gemini CLI provider](https://ai-sdk.dev) to deliver a full-featured, in-browser coding workspace. Users can chat with the assistant to scaffold projects, run commands, edit files, and preview live applications – all without leaving the browser.
 
-> **Note**: The assistant requires either a configured `GEMINI_API_KEY`/`GOOGLE_GENERATIVE_AI_API_KEY` or local Gemini CLI OAuth credentials. Without valid credentials the API server will respond with a `503` status code.
+> **Note**: The assistant requires valid credentials for the configured AI provider (Gemini, Groq, or Cohere). Without them the API server will respond with a `503` status code.
 
 ## Features
 
 - **WebContainer orchestration** – Boot, manage, and teardown a WebContainer workspace directly from the chat UI.
 - **AI-guided workflows** – Uses Gemini 2.5 Flash via the `ai-sdk-provider-gemini-cli` provider and structured outputs to generate actionable instructions.
-- **Groq + Gemini model flexibility** – Switch between Gemini and Groq large language models by configuring environment variables.
+- **Groq + Gemini + Cohere flexibility** – Switch between Gemini, Groq, or Cohere large language models by configuring environment variables.
 - **File system management** – Create, edit, and delete files/folders using natural language commands or the built-in editor.
 - **Command execution** – Run arbitrary shell commands (`npm install`, `npm run dev`, etc.) with realtime terminal output.
 - **Live preview** – Automatically capture dev-server previews and stream them inside the app.
@@ -29,7 +29,7 @@ An AI-powered developer companion that combines the [Tribe WebContainer Runtime]
 │   ├── lib/                # Client helpers and shared types
 │   └── styles.css          # Minimal styling
 └── server/
-    ├── index.ts            # Express API that talks to Gemini
+    ├── index.ts            # Express API that talks to Gemini, Groq, or Cohere
     └── types.ts            # Zod schemas shared by the API
 ```
 
@@ -43,31 +43,15 @@ npm install
 
 ### 2. Configure environment variables
 
-Create a `.env` file at the project root and supply your preferred authentication method:
+Create a `.env` file at the project root and supply credentials for the provider you plan to use. Only one provider needs to be configured at a time.
 
-- **Groq (new!)**
+| Provider | Required variables | Optional variables |
+| --- | --- | --- |
+| Gemini | `AI_PROVIDER=gemini`<br>`GEMINI_API_KEY=<your_api_key>` **or** `GOOGLE_GENERATIVE_AI_API_KEY=<your_api_key>`<br>`GEMINI_AUTH_TYPE=api-key` | `GEMINI_MODEL` (defaults to `gemini-2.5-flash`)<br>Set `GEMINI_AUTH_TYPE=oauth-personal` to rely on local Gemini CLI OAuth instead of an API key. |
+| Groq | `AI_PROVIDER=groq`<br>`GROQ_API_KEY=<your_api_key>` | `GROQ_MODEL` (defaults to `deepseek-r1-distill-llama-70b`) |
+| Cohere | `AI_PROVIDER=cohere`<br>`COHERE_API_KEY=<your_api_key>` | `COHERE_MODEL` (defaults to `command-r-plus`) |
 
-  ```bash
-  AI_PROVIDER=groq
-  GROQ_API_KEY=your_groq_api_key
-  GROQ_MODEL=deepseek-r1-distill-llama-70b # optional – defaults to this value
-  ```
-
-- **API key (recommended)**
-
-  ```bash
-  AI_PROVIDER=gemini
-  GEMINI_API_KEY=your_api_key_here
-  GEMINI_AUTH_TYPE=api-key
-  ```
-
-- **Gemini CLI OAuth (requires the [Gemini CLI](https://github.com/google/generative-ai-js/tree/main/packages/ai-sdk-provider-gemini-cli))**
-
-  ```bash
-  GEMINI_AUTH_TYPE=oauth-personal
-  ```
-
-If you are migrating from earlier versions you can continue to use `GOOGLE_GENERATIVE_AI_API_KEY`; it is treated as a fallback for `GEMINI_API_KEY`.
+If you are migrating from earlier versions you can continue to use `GOOGLE_GENERATIVE_AI_API_KEY`; it is treated as a fallback for `GEMINI_API_KEY` when Gemini is selected.
 
 ### Groq quickstart
 
@@ -95,7 +79,7 @@ for await (const textPart of result.textStream) {
 curl "https://api.groq.com/openai/v1/chat/completions" \
   -X POST \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $GROQ_API_KEY" \
+  -H "Authorization: Bearer ${GROQ_API_KEY}" \
   -d '{
          "messages": [
            {
