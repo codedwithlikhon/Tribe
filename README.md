@@ -8,6 +8,7 @@ An AI-powered developer companion that combines the [Tribe WebContainer Runtime]
 
 - **WebContainer orchestration** – Boot, manage, and teardown a WebContainer workspace directly from the chat UI.
 - **AI-guided workflows** – Uses Gemini 2.5 Flash via the `ai-sdk-provider-gemini-cli` provider and structured outputs to generate actionable instructions.
+- **Multi-provider flexibility** – Switch between Gemini, Groq, or Cohere large language models by configuring environment variables.
 - **File system management** – Create, edit, and delete files/folders using natural language commands or the built-in editor.
 - **Command execution** – Run arbitrary shell commands (`npm install`, `npm run dev`, etc.) with realtime terminal output.
 - **Live preview** – Automatically capture dev-server previews and stream them inside the app.
@@ -44,20 +45,55 @@ npm install
 
 Create a `.env` file at the project root and supply your preferred authentication method:
 
-- **API key (recommended)**
+| Provider | Required variables | Optional variables | Notes |
+| -------- | ------------------ | ------------------ | ----- |
+| **Gemini** | `AI_PROVIDER=gemini`<br/>`GEMINI_API_KEY=<key>` or `GOOGLE_GENERATIVE_AI_API_KEY=<key>` | `GEMINI_MODEL` (defaults to `gemini-2.5-flash`)<br/>`GEMINI_AUTH_TYPE=api-key &#124; oauth-personal` | Omit `GEMINI_API_KEY` and set `GEMINI_AUTH_TYPE=oauth-personal` to reuse Gemini CLI OAuth tokens. |
+| **Groq** | `AI_PROVIDER=groq`<br/>`GROQ_API_KEY=<key>` | `GROQ_MODEL` (defaults to `deepseek-r1-distill-llama-70b`) | Enables Groq's low-latency inference. |
+| **Cohere** | `AI_PROVIDER=cohere`<br/>`COHERE_API_KEY=<key>` | `COHERE_MODEL` (defaults to `command-r-plus-08-2024`) | Ideal for summarization-heavy workflows. |
 
-  ```bash
-  GEMINI_API_KEY=your_api_key_here
-  GEMINI_AUTH_TYPE=api-key
-  ```
+If you are migrating from earlier versions you can continue to use `GOOGLE_GENERATIVE_AI_API_KEY`; it is treated as a fallback for `GEMINI_API_KEY` when the provider is set to `gemini`.
 
-- **Gemini CLI OAuth (requires the [Gemini CLI](https://github.com/google/generative-ai-js/tree/main/packages/ai-sdk-provider-gemini-cli))**
+### Groq quickstart
 
-  ```bash
-  GEMINI_AUTH_TYPE=oauth-personal
-  ```
+Groq support enables high-speed inference and large-context chat models. Once the environment variables are configured, the existing `/api/chat` endpoint will automatically route requests through Groq.
 
-If you are migrating from earlier versions you can continue to use `GOOGLE_GENERATIVE_AI_API_KEY`; it is treated as a fallback for `GEMINI_API_KEY`.
+#### Node streaming example
+
+```ts
+import { groq } from '@ai-sdk/groq';
+import { streamText } from 'ai';
+
+const result = streamText({
+  model: groq('deepseek-r1-distill-llama-70b'),
+  prompt: 'Invent a new holiday and describe its traditions.',
+});
+
+for await (const textPart of result.textStream) {
+  process.stdout.write(textPart);
+}
+```
+
+#### cURL example
+
+```bash
+curl "https://api.groq.com/openai/v1/chat/completions" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${GROQ_API_KEY}" \
+  -d '{
+        "messages": [
+          {
+            "role": "user",
+            "content": "Why is fast inference so important for AI applications?"
+          }
+        ],
+        "model": "qwen-qwq-32b",
+        "temperature": 0.6,
+        "max_completion_tokens": 32768,
+        "top_p": 0.95,
+        "stream": true
+      }'
+```
 
 ### 3. Start the development servers
 
@@ -90,6 +126,42 @@ npm run preview
 2. **Structured AI output** – The API uses `generateObject` with a strict Zod schema so Gemini replies with executable actions (`createOrUpdateFile`, `deletePath`, `runCommand`).
 3. **Action execution** – The frontend streams these actions to the WebContainer runtime, updating the filesystem, running commands, and refreshing the workspace automatically.
 4. **Observability** – Each action’s status is surfaced in the chat transcript and the action log; terminal output and server previews are captured in dedicated panels.
+
+### Resumable streams (experimental)
+
+The `useChat` hook from `@ai-sdk/react` exposes an `experimental_resume` helper that can pick up an in-flight stream after a refresh or network disconnect. To enable it:
+
+1. Install the [`resumable-stream`](https://www.npmjs.com/package/resumable-stream) package and provision a Redis instance. Set `REDIS_URL` (or `KV_URL`) so the API can persist stream state.
+2. Create a table to associate chat IDs with stream IDs.
+3. Call `experimental_resume` once when your chat component mounts:
+
+   ```tsx
+   'use client';
+
+   import { useChat } from '@ai-sdk/react';
+   import { useEffect } from 'react';
+
+   export function Chat({ id }: { id: string }) {
+     const { experimental_resume } = useChat({ id });
+
+     useEffect(() => {
+       experimental_resume();
+     }, [experimental_resume]);
+
+     return <div>{/* chat UI */}</div>;
+   }
+   ```
+
+`experimental_resume` issues a `GET` request to your chat endpoint (e.g., `/api/chat?chatId=<id>`). If a stream is active it resumes token delivery; otherwise the call completes without error.
+
+### Prompt design with XML
+
+Using XML tags in system prompts clarifies structure for complex instructions:
+
+- **Structure and organization** – Tags such as `<context>`, `<instructions>`, and `<output>` provide explicit boundaries for each section.
+- **Clarity and readability** – Descriptive tags reduce ambiguity for both humans and the model.
+- **Consistency** – Reusable tag schemas keep prompts uniform across projects.
+- **Improved instruction following** – The explicit hierarchy helps models execute multi-step tasks and respect output formats.
 
 ## Safety considerations
 

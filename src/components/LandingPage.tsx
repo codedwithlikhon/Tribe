@@ -1,4 +1,5 @@
 import { ArrowRightIcon, Code2Icon, MessageCircleIcon, MonitorSmartphoneIcon, SparklesIcon } from 'lucide-react';
+import logoUrl from '../assets/star-of-david.svg';
 
 interface LandingPageProps {
   onLaunch: () => void;
@@ -29,7 +30,10 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
   return (
     <div className="landing-page">
       <header className="landing-nav">
-        <div className="landing-logo">Tribe</div>
+        <div className="landing-logo" aria-label="Tribe">
+          <img src={logoUrl} alt="Tribe logo" />
+          <span>Tribe</span>
+        </div>
         <div className="landing-nav-actions">
           <button type="button" className="secondary-button">
             View docs

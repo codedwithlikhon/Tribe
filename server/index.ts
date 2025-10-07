@@ -4,34 +4,77 @@ import morgan from 'morgan';
 import { generateObject } from 'ai';
 import type { LanguageModel } from 'ai';
 import { createGeminiProvider } from 'ai-sdk-provider-gemini-cli';
+import { createCohere } from '@ai-sdk/cohere';
+import { createGroq } from '@ai-sdk/groq';
 import { z } from 'zod';
 import { assistantResponseSchema, chatRequestSchema, ChatRequest } from './types';
 
 const PORT = Number(process.env.PORT ?? 8787);
 
 type GeminiAuthType = 'oauth-personal' | 'api-key' | 'gemini-api-key';
+type ProviderName = 'gemini' | 'groq' | 'cohere';
+
+const providerName = (process.env.AI_PROVIDER ?? 'gemini') as ProviderName;
 
 const geminiAuthTypeEnv = process.env.GEMINI_AUTH_TYPE as GeminiAuthType | undefined;
 const geminiApiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 const geminiAuthType: GeminiAuthType = geminiAuthTypeEnv ?? (geminiApiKey ? 'api-key' : 'oauth-personal');
+const missingGeminiApiKey = geminiAuthType !== 'oauth-personal' && !geminiApiKey;
 
-const missingApiKey = geminiAuthType !== 'oauth-personal' && !geminiApiKey;
+const groqApiKey = process.env.GROQ_API_KEY;
+const groqModelName = process.env.GROQ_MODEL ?? 'deepseek-r1-distill-llama-70b';
 
-if (missingApiKey) {
-  console.warn(
-    'Missing GEMINI_API_KEY environment variable. Configure GEMINI_API_KEY or switch GEMINI_AUTH_TYPE to "oauth-personal" to enable AI features.'
-  );
+const cohereApiKey = process.env.COHERE_API_KEY;
+const cohereModelName = process.env.COHERE_MODEL ?? 'command-r-plus-08-2024';
+
+let modelFactory: (() => LanguageModel) | null = null;
+
+switch (providerName) {
+  case 'groq': {
+    if (!groqApiKey) {
+      console.warn('Missing GROQ_API_KEY environment variable. Configure GROQ_API_KEY to enable Groq responses.');
+      break;
+    }
+
+    const groqProvider = createGroq({ apiKey: groqApiKey });
+    modelFactory = () => groqProvider(groqModelName) as unknown as LanguageModel;
+    break;
+  }
+  case 'cohere': {
+    if (!cohereApiKey) {
+      console.warn('Missing COHERE_API_KEY environment variable. Configure COHERE_API_KEY to enable Cohere responses.');
+      break;
+    }
+
+    const cohereProvider = createCohere({ apiKey: cohereApiKey });
+    modelFactory = () => cohereProvider(cohereModelName) as unknown as LanguageModel;
+    break;
+  }
+  case 'gemini':
+  default: {
+    if (missingGeminiApiKey) {
+      console.warn(
+        'Missing GEMINI_API_KEY environment variable. Configure GEMINI_API_KEY or switch GEMINI_AUTH_TYPE to "oauth-personal" to enable AI features.'
+      );
+    }
+
+    const gemini = !missingGeminiApiKey
+      ? createGeminiProvider(
+          geminiAuthType === 'oauth-personal'
+            ? { authType: 'oauth-personal' }
+            : { authType: geminiAuthType, apiKey: geminiApiKey as string }
+        )
+      : null;
+
+    const geminiModelName = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
+
+    if (gemini) {
+      modelFactory = () => gemini(geminiModelName) as unknown as LanguageModel;
+    }
+
+    break;
+  }
 }
-
-const gemini = !missingApiKey
-  ? createGeminiProvider(
-      geminiAuthType === 'oauth-personal'
-        ? { authType: 'oauth-personal' }
-        : { authType: geminiAuthType, apiKey: geminiApiKey as string }
-    )
-  : null;
-
-const modelName = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
 
 const app = express();
 app.use(cors());
@@ -61,8 +104,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.post('/api/chat', async (req, res) => {
-  if (!gemini) {
-    return res.status(503).json({ error: 'Gemini provider not configured.' });
+  if (!modelFactory) {
+    return res.status(503).json({ error: 'AI provider not configured.' });
   }
 
   const parseResult = chatRequestSchema.safeParse(req.body);
@@ -71,7 +114,7 @@ app.post('/api/chat', async (req, res) => {
   }
 
   const requestPayload = parseResult.data;
-  const model = gemini(modelName);
+  const model = modelFactory();
 
   try {
     const { object } = await generateObject({
@@ -102,5 +145,6 @@ app.post('/api/chat', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`API server listening on http://localhost:${PORT}`);
+  const statusLabel = modelFactory ? providerName : 'unconfigured';
+  console.log(`API server listening on http://localhost:${PORT} (provider: ${statusLabel})`);
 });
