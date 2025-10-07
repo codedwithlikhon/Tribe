@@ -210,6 +210,19 @@ export function useWebContainer() {
     void boot();
   }, [boot]);
 
+  useEffect(() => {
+    return () => {
+      if (processRef.current) {
+        processRef.current.kill();
+        processRef.current = null;
+      }
+      if (instanceRef.current) {
+        instanceRef.current.teardown();
+        instanceRef.current = null;
+      }
+    };
+  }, []);
+
   const refreshProjectTree = useCallback(async () => {
     if (!instanceRef.current) return;
     const files = await readAllFiles(instanceRef.current);

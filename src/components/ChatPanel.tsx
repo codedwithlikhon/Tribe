@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 import type { ChatMessage, ActionResult } from '../lib/types';
+import { ActionLog } from './ActionLog';
 
 interface ChatPanelProps {
   messages: ChatMessage[];
@@ -30,18 +31,7 @@ export function ChatPanel({ messages, onSend, isProcessing, actionLog }: ChatPan
             <div key={message.id} className="chat-message">
               <div className="role">{message.role === 'assistant' ? 'Assistant' : 'You'}</div>
               <div>{message.content}</div>
-              {message.actions && message.actions.length > 0 ? (
-                <div className="action-log">
-                  {message.actions.map((action, index) => (
-                    <div key={`${action.type}-${index}`} className="action-log-entry">
-                      <span className="badge">{action.type}</span>
-                      <div>{'path' in action ? action.path : action.command}</div>
-                      {action.status ? <div>Status: {action.status}</div> : null}
-                      {action.message ? <div>{action.message}</div> : null}
-                    </div>
-                  ))}
-                </div>
-              ) : null}
+              {message.actions ? <ActionLog actions={message.actions} compact /> : null}
               {message.error ? <div className="action-log-entry">Error: {message.error}</div> : null}
             </div>
           ))}
@@ -57,18 +47,12 @@ export function ChatPanel({ messages, onSend, isProcessing, actionLog }: ChatPan
           </button>
         </form>
       </div>
-      <div className="action-log" style={{ marginLeft: '1rem', flex: '0 0 280px' }}>
-        <h4>Latest actions</h4>
-        {actionLog.length === 0 && <div>No actions executed yet.</div>}
-        {actionLog.map((action, index) => (
-          <div key={`${action.type}-${index}`} className="action-log-entry">
-            <strong>{action.type}</strong>
-            <div>{'path' in action ? action.path : action.command}</div>
-            {action.status ? <div>Status: {action.status}</div> : null}
-            {action.message ? <div>{action.message}</div> : null}
-          </div>
-        ))}
-      </div>
+      <ActionLog
+        actions={actionLog}
+        heading="Latest actions"
+        emptyState="No actions executed yet."
+        className="side-action-log"
+      />
     </div>
   );
 }
