@@ -35,9 +35,15 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
           <span>Tribe</span>
         </div>
         <div className="landing-nav-actions">
-          <button type="button" className="secondary-button">
+          <a
+            className="secondary-button"
+            href="https://docs.tribe.sh/"
+            target="_blank"
+            rel="noreferrer noopener"
+            aria-label="View Tribe documentation (opens in a new tab)"
+          >
             View docs
-          </button>
+          </a>
           <button type="button" className="primary-button" onClick={onLaunch}>
             Launch workspace
           </button>
