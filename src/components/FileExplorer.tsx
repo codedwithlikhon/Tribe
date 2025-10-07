@@ -22,15 +22,17 @@ function renderTree(node: DirectoryNode, selectedPath: string | null, onSelect: 
             );
           }
           return (
-            <li
-              key={child.path}
-              className={selectedPath === child.path ? 'active' : ''}
-              onClick={() => onSelect(child)}
-            >
-              <span role="img" aria-label="file">
-                📄
-              </span>
-              {child.name}
+            <li key={child.path}>
+              <button
+                type="button"
+                className={selectedPath === child.path ? 'active' : ''}
+                onClick={() => onSelect(child)}
+              >
+                <span role="img" aria-label="file">
+                  📄
+                </span>
+                {child.name}
+              </button>
             </li>
           );
         })}
