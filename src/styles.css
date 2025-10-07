@@ -624,17 +624,32 @@ button {
 .file-tree li {
   margin: 0;
   padding: 0.25rem 0;
+}
+
+.file-tree button {
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   border-radius: 8px;
-  padding-inline: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  width: 100%;
+  border: none;
+  background: none;
+  color: inherit;
+  text-align: left;
+  font: inherit;
 }
 
-.file-tree li:hover,
-.file-tree li.active {
+.file-tree button:hover,
+.file-tree button.active,
+.file-tree button:focus-visible {
   background: #eff6ff;
+}
+
+.file-tree button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
 
 .editor textarea {
