@@ -129,7 +129,7 @@ async function ensureDirectory(instance: WebContainer, path: string) {
     current = current ? `${current}/${segment}` : segment;
     try {
       await instance.fs.mkdir(current);
-    } catch (error) {
+    } catch {
       // Directory already exists
     }
   }

@@ -5,7 +5,7 @@ function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
 
-export interface ToolbarProps extends ComponentProps<typeof NodeToolbar> {}
+export type ToolbarProps = ComponentProps<typeof NodeToolbar>;
 
 export function Toolbar({ className, position = 'bottom', ...props }: ToolbarProps) {
   return <NodeToolbar position={position} className={cn('ai-toolbar', className)} {...props} />;
