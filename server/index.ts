@@ -3,20 +3,35 @@ import cors from 'cors';
 import morgan from 'morgan';
 import { generateObject } from 'ai';
 import type { LanguageModel } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createGeminiProvider } from 'ai-sdk-provider-gemini-cli';
 import { z } from 'zod';
 import { assistantResponseSchema, chatRequestSchema, ChatRequest } from './types';
 
 const PORT = Number(process.env.PORT ?? 8787);
-const GOOGLE_API_KEY = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
-if (!GOOGLE_API_KEY) {
-  console.warn('Missing GOOGLE_GENERATIVE_AI_API_KEY environment variable. AI features will be disabled.');
+type GeminiAuthType = 'oauth-personal' | 'api-key' | 'gemini-api-key';
+
+const geminiAuthTypeEnv = process.env.GEMINI_AUTH_TYPE as GeminiAuthType | undefined;
+const geminiApiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+const geminiAuthType: GeminiAuthType = geminiAuthTypeEnv ?? (geminiApiKey ? 'api-key' : 'oauth-personal');
+
+const missingApiKey = geminiAuthType !== 'oauth-personal' && !geminiApiKey;
+
+if (missingApiKey) {
+  console.warn(
+    'Missing GEMINI_API_KEY environment variable. Configure GEMINI_API_KEY or switch GEMINI_AUTH_TYPE to "oauth-personal" to enable AI features.'
+  );
 }
 
-const google = createGoogleGenerativeAI({
-  apiKey: GOOGLE_API_KEY,
-});
+const gemini = !missingApiKey
+  ? createGeminiProvider(
+      geminiAuthType === 'oauth-personal'
+        ? { authType: 'oauth-personal' }
+        : { authType: geminiAuthType, apiKey: geminiApiKey as string }
+    )
+  : null;
+
+const modelName = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
 
 const app = express();
 app.use(cors());
@@ -46,8 +61,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.post('/api/chat', async (req, res) => {
-  if (!GOOGLE_API_KEY) {
-    return res.status(503).json({ error: 'Google Generative AI API key not configured.' });
+  if (!gemini) {
+    return res.status(503).json({ error: 'Gemini provider not configured.' });
   }
 
   const parseResult = chatRequestSchema.safeParse(req.body);
@@ -56,7 +71,7 @@ app.post('/api/chat', async (req, res) => {
   }
 
   const requestPayload = parseResult.data;
-  const model = google('gemini-2.5-flash');
+  const model = gemini(modelName);
 
   try {
     const { object } = await generateObject({
