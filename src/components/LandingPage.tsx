@@ -126,6 +126,95 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
             </article>
           ))}
         </section>
+
+        <section className="landing-design-mode">
+          <div className="landing-design-copy">
+            <span className="landing-eyebrow">Design mode</span>
+            <h2>Build visually, iterate instantly</h2>
+            <p>
+              Design mode provides an intuitive, visual way to build and refine your app&apos;s interface. Select any element in
+              the preview, inspect its properties, and make precise adjustments using natural language or the full design
+              control panel.
+            </p>
+
+            <div className="landing-design-grid">
+              <article>
+                <h3>Enable Design Mode</h3>
+                <ul>
+                  <li>
+                    <strong>Keyboard shortcut:</strong> Press <kbd>Option</kbd> + <kbd>D</kbd> to toggle Design Mode from
+                    anywhere.
+                  </li>
+                  <li>
+                    <strong>Using the UI:</strong> Open the <em>Design</em> tab at the top of the interface to switch from the
+                    chat view.
+                  </li>
+                </ul>
+              </article>
+
+              <article>
+                <h3>Select exactly what you need</h3>
+                <p>
+                  With Design Mode active, hovering over the preview highlights selectable regions so you can target the exact
+                  component you want to modify. Click any highlighted element to lock it into the design panel.
+                </p>
+              </article>
+
+              <article>
+                <h3>Modify elements your way</h3>
+                <ul>
+                  <li>
+                    <strong>Prompt for complex updates:</strong> Describe structural changes like &quot;add a button next to this
+                    text&quot; or &quot;make this a three-column grid&quot; for instant layout edits.
+                  </li>
+                  <li>
+                    <strong>Fine-tune in the panel:</strong> Adjust typography, colors, spacing, borders, radius, shadows, and
+                    more with Tailwind-native controls.
+                  </li>
+                </ul>
+              </article>
+
+              <article>
+                <h3>Stay on brand effortlessly</h3>
+                <p>
+                  The design panel reads directly from your <code>tailwind.config.js</code>, so every tweak uses your existing
+                  design tokens. Experiment freely—prompt-based updates use AI tokens, while panel adjustments are unlimited.
+                </p>
+              </article>
+
+              <article>
+                <h3>Save when it&apos;s perfect</h3>
+                <p>
+                  Once you&apos;re happy with the results, tap <strong>Save</strong> at the bottom of the preview to capture your
+                  edits and keep iterating with confidence.
+                </p>
+              </article>
+            </div>
+          </div>
+
+          <aside className="landing-design-aside" aria-hidden="true">
+            <div className="landing-design-card">
+              <span className="landing-eyebrow">Preview</span>
+              <h3>Design controls at a glance</h3>
+              <ul>
+                <li>Typography presets with weight, leading, and spacing adjustments.</li>
+                <li>Color, background, border, and shadow controls aligned with your tokens.</li>
+                <li>Layout tools for margin, padding, alignment, and responsive sizing.</li>
+                <li>Content editing to update copy inline while you design.</li>
+              </ul>
+            </div>
+          </aside>
+        </section>
+
+        <section className="landing-anyone">
+          <div className="landing-anyone-card">
+            <h2>Anyone, anywhere can build with Tribe</h2>
+            <p>
+              Turn your ideas into real web apps without writing code. Describe the experience you want, remix generated
+              layouts in Design Mode, and deploy with a single click—all from one collaborative canvas.
+            </p>
+          </div>
+        </section>
       </main>
     </div>
   );

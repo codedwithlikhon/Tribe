@@ -1,6 +1,17 @@
-import { FormEvent, useState } from 'react';
-import { ThumbsUpIcon } from 'lucide-react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { CopyIcon, ThumbsUpIcon, XIcon } from 'lucide-react';
 import { Actions, Action } from '@/components/ai-elements/actions';
+import {
+  Artifact,
+  ArtifactAction,
+  ArtifactActions,
+  ArtifactClose,
+  ArtifactContent,
+  ArtifactDescription,
+  ArtifactHeader,
+  ArtifactTitle,
+} from '@/components/ai-elements/artifact';
+import { Button } from '@/components/ui/button';
 import type { ChatMessage, ActionResult } from '../lib/types';
 import { ActionLog } from './ActionLog';
 
@@ -14,6 +25,8 @@ interface ChatPanelProps {
 export function ChatPanel({ messages, onSend, isProcessing, actionLog }: ChatPanelProps) {
   const [draft, setDraft] = useState('');
   const [likedMessages, setLikedMessages] = useState<Set<string>>(() => new Set());
+  const [isActionLogVisible, setIsActionLogVisible] = useState(true);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
 
   const handleToggleLike = (messageId: string) => {
     setLikedMessages((prev) => {
@@ -36,6 +49,58 @@ export function ChatPanel({ messages, onSend, isProcessing, actionLog }: ChatPan
     setDraft('');
     await onSend(message);
   };
+
+  const handleCopyActionLog = async () => {
+    if (!actionLog.length || typeof navigator === 'undefined' || !navigator.clipboard) {
+      setCopyStatus('error');
+      return;
+    }
+
+    const formattedLog = actionLog
+      .map((action) => {
+        const header = `${action.type}${action.status ? ` [${action.status}]` : ''}`;
+        const target = action.type === 'runCommand' ? action.command : action.path;
+        const meta: string[] = [];
+        if (action.type === 'runCommand' && action.cwd) {
+          meta.push(`cwd: ${action.cwd}`);
+        }
+        if (action.message) {
+          meta.push(action.message);
+        }
+        const body = action.output?.trim();
+        return [header, target, meta.join('\n'), body].filter(Boolean).join('\n');
+      })
+      .join('\n\n');
+
+    try {
+      await navigator.clipboard.writeText(formattedLog);
+      setCopyStatus('copied');
+    } catch (error) {
+      console.error('Failed to copy action log', error);
+      setCopyStatus('error');
+    }
+  };
+
+  useEffect(() => {
+    if (copyStatus === 'idle') {
+      return;
+    }
+    const timeout = window.setTimeout(() => setCopyStatus('idle'), 2000);
+    return () => window.clearTimeout(timeout);
+  }, [copyStatus]);
+
+  const actionLogDescription = useMemo(() => {
+    if (!actionLog.length) {
+      return 'No actions executed yet.';
+    }
+    if (copyStatus === 'copied') {
+      return 'Action log copied to clipboard.';
+    }
+    if (copyStatus === 'error') {
+      return 'Unable to copy log. Try again or copy manually.';
+    }
+    return `Tracking ${Math.min(actionLog.length, 20)} recent ${actionLog.length === 1 ? 'action' : 'actions'}.`;
+  }, [actionLog, copyStatus]);
 
   return (
     <div className="panel chat-panel">
@@ -78,12 +143,37 @@ export function ChatPanel({ messages, onSend, isProcessing, actionLog }: ChatPan
           </button>
         </form>
       </div>
-      <ActionLog
-        actions={actionLog}
-        heading="Latest actions"
-        emptyState="No actions executed yet."
-        className="side-action-log"
-      />
+      {isActionLogVisible ? (
+        <Artifact className="side-action-log" aria-live="polite">
+          <ArtifactHeader>
+            <div>
+              <ArtifactTitle>Latest actions</ArtifactTitle>
+              <ArtifactDescription>{actionLogDescription}</ArtifactDescription>
+            </div>
+            <ArtifactActions>
+              <ArtifactAction
+                icon={CopyIcon}
+                tooltip="Copy log"
+                label="Copy action log"
+                onClick={handleCopyActionLog}
+                disabled={!actionLog.length}
+              />
+              <ArtifactClose aria-label="Hide action log" onClick={() => setIsActionLogVisible(false)}>
+                <XIcon aria-hidden="true" className="size-4" />
+              </ArtifactClose>
+            </ArtifactActions>
+          </ArtifactHeader>
+          <ArtifactContent>
+            <ActionLog actions={actionLog} emptyState="No actions executed yet." className="artifact-action-log" />
+          </ArtifactContent>
+        </Artifact>
+      ) : (
+        <div className="side-action-log-toggle">
+          <Button variant="outline" size="sm" onClick={() => setIsActionLogVisible(true)}>
+            Show actions
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
