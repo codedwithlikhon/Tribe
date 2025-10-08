@@ -1,9 +1,6 @@
 import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes } from 'react';
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
-}
+import { cn } from '@/utils/cn';
 
 const variantClassNames = {
   default: 'ui-button-default',

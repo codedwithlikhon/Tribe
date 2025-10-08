@@ -1,10 +1,7 @@
 import type { ComponentProps, HTMLAttributes } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
-}
+import { cn } from '@/utils/cn';
 
 export function Artifact({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return <div className={cn('artifact', className)} {...props} />;

@@ -7,10 +7,7 @@ import {
   getBezierPath,
   type EdgeProps,
 } from '@xyflow/react';
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
-}
+import { cn } from '@/utils/cn';
 
 function useBezierPath(props: EdgeProps) {
   const { sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition } = props;

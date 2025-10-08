@@ -1,9 +1,6 @@
 import type { ComponentProps } from 'react';
 import { NodeToolbar } from '@xyflow/react';
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
-}
+import { cn } from '@/utils/cn';
 
 export type ToolbarProps = ComponentProps<typeof NodeToolbar>;
 
