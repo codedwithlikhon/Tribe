@@ -16,6 +16,22 @@ let bootPromise: Promise<WebContainer> | null = null;
 let instance: WebContainer | null = null;
 
 const LOGGER_PREFIX = '[webcontainer]';
+class CrossOriginIsolationError extends Error {
+  static readonly MESSAGE = [
+    'WebContainers require cross-origin isolation (SharedArrayBuffer availability).',
+    'Serve the app with Cross-Origin-Embedder-Policy: require-corp and Cross-Origin-Opener-Policy: same-origin (or credentialless with matching boot options),',
+    'then open Tribe in its own tab and hard-refresh to apply the headers.',
+  ].join(' ');
+
+  constructor() {
+    super(CrossOriginIsolationError.MESSAGE);
+    this.name = 'CrossOriginIsolationError';
+  }
+}
+
+function createCrossOriginIsolationError(): CrossOriginIsolationError {
+  return new CrossOriginIsolationError();
+}
 
 export let webcontainer: Promise<WebContainer> = new Promise(() => {
   // noop for ssr environments
@@ -27,8 +43,31 @@ function ensureClientEnvironment() {
   }
 }
 
+function ensureCrossOriginIsolation() {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  const hasSharedArrayBuffer = typeof window.SharedArrayBuffer !== 'undefined';
+  const isIsolated = (window as typeof window & { crossOriginIsolated?: boolean }).crossOriginIsolated === true;
+
+  if (!hasSharedArrayBuffer || !isIsolated) {
+    const isolationError = createCrossOriginIsolationError();
+    webcontainerContext.loaded = false;
+    webcontainerContext.error = isolationError.message;
+    throw isolationError;
+  }
+}
+
 function normalizeError(error: unknown): Error {
   if (error instanceof Error) {
+    if (
+      (error.name === 'DataCloneError' || error.message.includes('SharedArrayBuffer')) &&
+      error.message.includes('SharedArrayBuffer')
+    ) {
+      return createCrossOriginIsolationError();
+    }
+
     const cleaned = cleanStackTrace(error);
     error.message = cleaned;
     return error;
@@ -39,6 +78,7 @@ function normalizeError(error: unknown): Error {
 
 export async function bootWebcontainer(): Promise<WebContainer> {
   ensureClientEnvironment();
+  ensureCrossOriginIsolation();
 
   if (instance) {
     console.debug(`${LOGGER_PREFIX} returning existing instance`);
