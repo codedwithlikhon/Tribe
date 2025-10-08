@@ -1,17 +1,31 @@
 import type { LanguageModel } from 'ai';
 import { createCohere } from '@ai-sdk/cohere';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createGeminiProvider } from 'ai-sdk-provider-gemini-cli';
 import { createGroq } from '@ai-sdk/groq';
 
+/**
+ * Supported authentication strategies for Google Generative AI (Gemini).
+ */
 export type GeminiAuthType = 'oauth-personal' | 'api-key' | 'gemini-api-key';
 export type ProviderName = 'gemini' | 'groq' | 'cohere';
 
+/**
+ * Structured result returned when building a model factory.
+ */
 export interface ModelFactoryResult {
   modelFactory: (() => LanguageModel) | null;
   providerName: ProviderName;
   warnings: string[];
 }
 
+/**
+ * Creates a language model factory based on the configured AI provider.
+ *
+ * The implementation mirrors the provider guidance from the Vercel AI SDK
+ * documentation while preserving the legacy Gemini CLI OAuth flow so existing
+ * environments continue to function without breaking changes.
+ */
 export function createModelFactory(): ModelFactoryResult {
   const providerNameEnv = process.env.AI_PROVIDER;
   const providerName: ProviderName =
@@ -49,28 +63,32 @@ export function createModelFactory(): ModelFactoryResult {
   }
 
   const geminiAuthTypeEnv = process.env.GEMINI_AUTH_TYPE as GeminiAuthType | undefined;
-  const geminiApiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-  const geminiAuthType: GeminiAuthType = geminiAuthTypeEnv ?? (geminiApiKey ? 'api-key' : 'oauth-personal');
-  const missingGeminiApiKey = geminiAuthType !== 'oauth-personal' && !geminiApiKey;
+  const googleGenerativeAiApiKey =
+    process.env.GEMINI_API_KEY ??
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ??
+    process.env.GOOGLE_API_KEY;
+
+  const geminiAuthType: GeminiAuthType =
+    geminiAuthTypeEnv ?? (googleGenerativeAiApiKey ? 'api-key' : 'oauth-personal');
+
+  const missingGeminiApiKey = geminiAuthType !== 'oauth-personal' && !googleGenerativeAiApiKey;
 
   if (missingGeminiApiKey) {
     warnings.push(
-      'Missing GEMINI_API_KEY environment variable. Configure GEMINI_API_KEY or switch GEMINI_AUTH_TYPE to "oauth-personal" to enable AI features.'
+      'Missing Google Generative AI API key. Configure GEMINI_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, or GOOGLE_API_KEY, or switch GEMINI_AUTH_TYPE to "oauth-personal" to enable AI features.'
     );
   }
 
-  const gemini = !missingGeminiApiKey
-    ? createGeminiProvider(
-        geminiAuthType === 'oauth-personal'
-          ? { authType: 'oauth-personal' }
-          : { authType: geminiAuthType, apiKey: geminiApiKey as string }
-      )
+  const googleGenerativeAi = !missingGeminiApiKey
+    ? geminiAuthType === 'oauth-personal'
+      ? createGeminiProvider({ authType: 'oauth-personal' })
+      : createGoogleGenerativeAI({ apiKey: googleGenerativeAiApiKey as string })
     : null;
 
   const geminiModelName = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
 
-  if (gemini) {
-    modelFactory = () => gemini(geminiModelName) as unknown as LanguageModel;
+  if (googleGenerativeAi) {
+    modelFactory = () => googleGenerativeAi(geminiModelName) as unknown as LanguageModel;
   }
 
   return { modelFactory, providerName, warnings };

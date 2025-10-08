@@ -87,9 +87,9 @@ The Gemini agent runtime is a Next.js-based control surface backed by the Vercel
 
 | Mode | Model | Thinking Budget | Temperature | Max Steps | Primary Use Case |
 | --- | --- | --- | --- | --- | --- |
-| **fast** | `gemini-2.0-flash-exp` | 0 | 0.7 | 3 | Quick scaffolds, simple edits |
-| **balanced** | `gemini-2.5-flash` | 2048 | 0.5 | 5 | General development with reasoning |
-| **deep** | `gemini-2.5-pro` | 8192 | 0.3 | 10 | Complex planning, architecture, debugging |
+| **fast** | `gemini-2.0-flash` | 0 | 0.7 | 3 | Quick scaffolds, simple edits |
+| **balanced** | `gemini-2.0-flash-thinking-exp` | 2048 | 0.5 | 5 | General development with reasoning |
+| **deep** | `gemini-2.5-pro-exp` | 8192 | 0.3 | 10 | Complex planning, architecture, debugging |
 
 > **Thinking budget** controls model-side chain-of-thought allocation. Higher budgets improve plan quality at the cost of latency. Only deep mode exposes `includeThoughts` metadata for telemetry.
 
@@ -358,11 +358,21 @@ const workspace = await db.get('state', 'workspace');
 ## Appendix: Reference Snippets
 
 ```ts
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { streamText } from 'ai';
+
+const google = createGoogleGenerativeAI({
+  apiKey:
+    process.env.GOOGLE_API_KEY ??
+    process.env.GOOGLE_GENERATIVE_AI_API_KEY ??
+    process.env.GEMINI_API_KEY!,
+});
+
 // Mode configuration
 const MODES = {
-  fast:     { model: 'gemini-2.0-flash-exp', thinking: 0,    temp: 0.7 },
-  balanced: { model: 'gemini-2.5-flash',      thinking: 2048, temp: 0.5 },
-  deep:     { model: 'gemini-2.5-pro',        thinking: 8192, temp: 0.3 },
+  fast:     { model: 'gemini-2.0-flash',             thinking: 0,    temp: 0.7 },
+  balanced: { model: 'gemini-2.0-flash-thinking-exp', thinking: 2048, temp: 0.5 },
+  deep:     { model: 'gemini-2.5-pro-exp',           thinking: 8192, temp: 0.3 },
 } as const;
 
 // Example system prompt builder
