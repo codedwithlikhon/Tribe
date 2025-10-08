@@ -1,5 +1,8 @@
 import { ChatRequestPayload, AiActionResponse } from './types';
 
+/**
+ * Sends a chat payload to the backend API and returns the AI action response.
+ */
 export async function requestAiActions(payload: ChatRequestPayload): Promise<AiActionResponse> {
   const response = await fetch('/api/chat', {
     method: 'POST',

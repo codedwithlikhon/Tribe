@@ -1,17 +1,17 @@
 # Tribe AI Chatbot
 
-An AI-powered developer companion that combines the [Tribe WebContainer Runtime](https://docs.tribe.sh/) with the [AI SDK Gemini CLI provider](https://ai-sdk.dev) to deliver a full-featured, in-browser coding workspace. Users can chat with the assistant to scaffold projects, run commands, edit files, and preview live applications – all without leaving the browser.
+An AI-powered developer companion that combines the [Tribe WebContainer Runtime](https://docs.tribe.sh/) with the [Vercel AI SDK](https://ai-sdk.dev) Google Generative AI integration to deliver a full-featured, in-browser coding workspace. Users can chat with the assistant to scaffold projects, run commands, edit files, and preview live applications – all without leaving the browser.
 
 > **Note**: The assistant requires valid credentials for the configured AI provider (Gemini, Groq, or Cohere). Without them the API server will respond with a `503` status code.
 
 ## Features
 
 - **WebContainer orchestration** – Boot, manage, and teardown a WebContainer workspace directly from the chat UI.
-- **AI-guided workflows** – Uses Gemini 2.5 Flash via the `ai-sdk-provider-gemini-cli` provider and structured outputs to generate actionable instructions.
+- **AI-guided workflows** – Uses Google Generative AI (Gemini) via the official `@ai-sdk/google` provider, with CLI OAuth fallback, to generate actionable instructions.
 - **Design-forward scaffolds** – Natural language prompts default to production-ready Next.js 15 + Tailwind CSS + shadcn/ui workspaces enriched with Geist tokens.
 - **Groq + Gemini + Cohere flexibility** – Switch between Gemini, Groq, or Cohere large language models by configuring environment variables.
 - **File system management** – Create, edit, and delete files/folders using natural language commands or the built-in editor.
-- **Command execution** – Run arbitrary shell commands (`npm install`, `npm run dev`, etc.) with realtime terminal output.
+- **Command execution** – Run arbitrary shell commands (`npm install`, `npm run dev`, etc.) with real-time terminal output.
 - **Live preview** – Automatically capture dev-server previews and stream them inside the app.
 - **Error handling & logging** – Surface validation issues, process crashes, and AI errors with shadcn/ui alerts and detailed context.
 - **Multi-language support** – The sandbox can host Node.js, React, Express, Vite, or any framework supported by npm packages.
@@ -48,11 +48,11 @@ Create a `.env` file at the project root and supply credentials for the provider
 
 | Provider | Required variables | Optional variables |
 | --- | --- | --- |
-| Gemini | `AI_PROVIDER=gemini`<br>`GEMINI_API_KEY=<your_api_key>` **or** `GOOGLE_GENERATIVE_AI_API_KEY=<your_api_key>`<br>`GEMINI_AUTH_TYPE=api-key` | `GEMINI_MODEL` (defaults to `gemini-2.5-flash`)<br>Set `GEMINI_AUTH_TYPE=oauth-personal` to rely on local Gemini CLI OAuth instead of an API key. |
+| Google Generative AI (Gemini) | `AI_PROVIDER=gemini`<br>`GEMINI_API_KEY=<your_api_key>` **or** `GOOGLE_GENERATIVE_AI_API_KEY=<your_api_key>` **or** `GOOGLE_API_KEY=<your_api_key>`<br>`GEMINI_AUTH_TYPE=api-key` | `GEMINI_MODEL` (defaults to `gemini-2.5-flash`)<br>Set `GEMINI_AUTH_TYPE=oauth-personal` to rely on the Gemini CLI OAuth flow instead of an API key. |
 | Groq | `AI_PROVIDER=groq`<br>`GROQ_API_KEY=<your_api_key>` | `GROQ_MODEL` (defaults to `deepseek-r1-distill-llama-70b`) |
 | Cohere | `AI_PROVIDER=cohere`<br>`COHERE_API_KEY=<your_api_key>` | `COHERE_MODEL` (defaults to `command-r-plus`) |
 
-If you are migrating from earlier versions you can continue to use `GOOGLE_GENERATIVE_AI_API_KEY`; it is treated as a fallback for `GEMINI_API_KEY` when Gemini is selected.
+If you are migrating from earlier versions you can continue to use `GOOGLE_GENERATIVE_AI_API_KEY`; it is treated as a fallback for `GEMINI_API_KEY` when Gemini is selected. The API also recognizes `GOOGLE_API_KEY` to match the official provider documentation.
 
 ### Groq quickstart
 
@@ -125,7 +125,7 @@ npm run preview
 ## How it works
 
 1. **Conversation flow** – User prompts are sent to the Express API along with a summary of project files and dependencies.
-2. **Structured AI output** – The API uses `generateObject` with a strict Zod schema so Gemini replies with executable actions (`createOrUpdateFile`, `deletePath`, `runCommand`).
+2. **Structured AI output** – The API uses `generateObject` with a strict Zod schema so Google Generative AI replies with executable actions (`createOrUpdateFile`, `deletePath`, `runCommand`).
 3. **Action execution** – The frontend streams these actions to the WebContainer runtime, updating the filesystem, running commands, and refreshing the workspace automatically.
 4. **Observability** – Each action’s status is surfaced in the chat transcript and the action log; terminal output and server previews are captured in dedicated panels.
 
@@ -183,7 +183,7 @@ Using XML tags in system prompts clarifies structure for complex instructions:
 
 | Issue | Resolution |
 | ----- | ---------- |
-| `503` from `/api/chat` | Ensure Gemini credentials are configured (`GEMINI_API_KEY`/`GOOGLE_GENERATIVE_AI_API_KEY` or `GEMINI_AUTH_TYPE=oauth-personal`). |
+| `503` from `/api/chat` | Ensure Google Generative AI credentials are configured (`GEMINI_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`, or `GOOGLE_API_KEY`; alternatively set `GEMINI_AUTH_TYPE=oauth-personal`). |
 | Commands hang or preview missing | Check the terminal panel for output and confirm the command includes `-- --host` when using dev servers like Vite. |
 | Missing dependencies | Ask the assistant to run `npm install <package>` or execute the command manually via chat. |
 

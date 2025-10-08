@@ -13,10 +13,12 @@
     "build:server": "tsc --project tsconfig.server.json",
     "preview": "npm run build && concurrently \"node dist/server/index.js\" \"vite preview --host\"",
     "lint": "eslint .",
+    "test": "npm run lint",
     "check:maintenance": "tsx scripts/check-maintenance.ts"
   },
   "dependencies": {
     "@ai-sdk/cohere": "^2.0.12",
+    "@ai-sdk/google": "^2.0.17",
     "@ai-sdk/groq": "^2.0.22",
     "@types/node": "^20.11.30",
     "@webcontainer/api": "^1.1.9",

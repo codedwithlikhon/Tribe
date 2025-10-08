@@ -1,0 +1,289 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index 0fe60d4..4a2b470 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -533,7 +533,7 @@ export async function POST(req: Request) {
+     model: 'openai/gpt-4o',
+     schema: codeBlockSchema,
+     prompt:
+-      `You are a helpful coding assitant. Only generate code, no markdown formatting or backticks, or text.` +
++      `You are a helpful coding assistant. Only generate code, no markdown formatting or backticks, or text.` +
+       context,
+   });
+ 
+diff --git a/README.md b/README.md
+index cba3a24..21aae7a 100644
+--- a/README.md
++++ b/README.md
+@@ -1,17 +1,17 @@
+ # Tribe AI Chatbot
+ 
+-An AI-powered developer companion that combines the [Tribe WebContainer Runtime](https://docs.tribe.sh/) with the [AI SDK Gemini CLI provider](https://ai-sdk.dev) to deliver a full-featured, in-browser coding workspace. Users can chat with the assistant to scaffold projects, run commands, edit files, and preview live applications – all without leaving the browser.
++An AI-powered developer companion that combines the [Tribe WebContainer Runtime](https://docs.tribe.sh/) with the [Vercel AI SDK](https://ai-sdk.dev) Google Generative AI integration to deliver a full-featured, in-browser coding workspace. Users can chat with the assistant to scaffold projects, run commands, edit files, and preview live applications – all without leaving the browser.
+ 
+ > **Note**: The assistant requires valid credentials for the configured AI provider (Gemini, Groq, or Cohere). Without them the API server will respond with a `503` status code.
+ 
+ ## Features
+ 
+ - **WebContainer orchestration** – Boot, manage, and teardown a WebContainer workspace directly from the chat UI.
+-- **AI-guided workflows** – Uses Gemini 2.5 Flash via the `ai-sdk-provider-gemini-cli` provider and structured outputs to generate actionable instructions.
++- **AI-guided workflows** – Uses Google Generative AI (Gemini) via the official `@ai-sdk/google` provider, with CLI OAuth fallback, to generate actionable instructions.
+ - **Design-forward scaffolds** – Natural language prompts default to production-ready Next.js 15 + Tailwind CSS + shadcn/ui workspaces enriched with Geist tokens.
+ - **Groq + Gemini + Cohere flexibility** – Switch between Gemini, Groq, or Cohere large language models by configuring environment variables.
+ - **File system management** – Create, edit, and delete files/folders using natural language commands or the built-in editor.
+-- **Command execution** – Run arbitrary shell commands (`npm install`, `npm run dev`, etc.) with realtime terminal output.
++- **Command execution** – Run arbitrary shell commands (`npm install`, `npm run dev`, etc.) with real-time terminal output.
+ - **Live preview** – Automatically capture dev-server previews and stream them inside the app.
+ - **Error handling & logging** – Surface validation issues, process crashes, and AI errors with shadcn/ui alerts and detailed context.
+ - **Multi-language support** – The sandbox can host Node.js, React, Express, Vite, or any framework supported by npm packages.
+@@ -48,11 +48,11 @@ Create a `.env` file at the project root and supply credentials for the provider
+ 
+ | Provider | Required variables | Optional variables |
+ | --- | --- | --- |
+-| Gemini | `AI_PROVIDER=gemini`<br>`GEMINI_API_KEY=<your_api_key>` **or** `GOOGLE_GENERATIVE_AI_API_KEY=<your_api_key>`<br>`GEMINI_AUTH_TYPE=api-key` | `GEMINI_MODEL` (defaults to `gemini-2.5-flash`)<br>Set `GEMINI_AUTH_TYPE=oauth-personal` to rely on local Gemini CLI OAuth instead of an API key. |
++| Google Generative AI (Gemini) | `AI_PROVIDER=gemini`<br>`GEMINI_API_KEY=<your_api_key>` **or** `GOOGLE_GENERATIVE_AI_API_KEY=<your_api_key>` **or** `GOOGLE_API_KEY=<your_api_key>`<br>`GEMINI_AUTH_TYPE=api-key` | `GEMINI_MODEL` (defaults to `gemini-2.5-flash`)<br>Set `GEMINI_AUTH_TYPE=oauth-personal` to rely on the Gemini CLI OAuth flow instead of an API key. |
+ | Groq | `AI_PROVIDER=groq`<br>`GROQ_API_KEY=<your_api_key>` | `GROQ_MODEL` (defaults to `deepseek-r1-distill-llama-70b`) |
+ | Cohere | `AI_PROVIDER=cohere`<br>`COHERE_API_KEY=<your_api_key>` | `COHERE_MODEL` (defaults to `command-r-plus`) |
+ 
+-If you are migrating from earlier versions you can continue to use `GOOGLE_GENERATIVE_AI_API_KEY`; it is treated as a fallback for `GEMINI_API_KEY` when Gemini is selected.
++If you are migrating from earlier versions you can continue to use `GOOGLE_GENERATIVE_AI_API_KEY`; it is treated as a fallback for `GEMINI_API_KEY` when Gemini is selected. The API also recognizes `GOOGLE_API_KEY` to match the official provider documentation.
+ 
+ ### Groq quickstart
+ 
+@@ -125,7 +125,7 @@ npm run preview
+ ## How it works
+ 
+ 1. **Conversation flow** – User prompts are sent to the Express API along with a summary of project files and dependencies.
+-2. **Structured AI output** – The API uses `generateObject` with a strict Zod schema so Gemini replies with executable actions (`createOrUpdateFile`, `deletePath`, `runCommand`).
++2. **Structured AI output** – The API uses `generateObject` with a strict Zod schema so Google Generative AI replies with executable actions (`createOrUpdateFile`, `deletePath`, `runCommand`).
+ 3. **Action execution** – The frontend streams these actions to the WebContainer runtime, updating the filesystem, running commands, and refreshing the workspace automatically.
+ 4. **Observability** – Each action’s status is surfaced in the chat transcript and the action log; terminal output and server previews are captured in dedicated panels.
+ 
+@@ -183,7 +183,7 @@ Using XML tags in system prompts clarifies structure for complex instructions:
+ 
+ | Issue | Resolution |
+ | ----- | ---------- |
+-| `503` from `/api/chat` | Ensure Gemini credentials are configured (`GEMINI_API_KEY`/`GOOGLE_GENERATIVE_AI_API_KEY` or `GEMINI_AUTH_TYPE=oauth-personal`). |
++| `503` from `/api/chat` | Ensure Google Generative AI credentials are configured (`GEMINI_API_KEY`, `GOOGLE_GENERATIVE_AI_API_KEY`, or `GOOGLE_API_KEY`; alternatively set `GEMINI_AUTH_TYPE=oauth-personal`). |
+ | Commands hang or preview missing | Check the terminal panel for output and confirm the command includes `-- --host` when using dev servers like Vite. |
+ | Missing dependencies | Ask the assistant to run `npm install <package>` or execute the command manually via chat. |
+ 
+diff --git a/docs/gemini-ai-sdk-browser-runtime.md b/docs/gemini-ai-sdk-browser-runtime.md
+index 4c8358b..1576e74 100644
+--- a/docs/gemini-ai-sdk-browser-runtime.md
++++ b/docs/gemini-ai-sdk-browser-runtime.md
+@@ -87,9 +87,9 @@ The Gemini agent runtime is a Next.js-based control surface backed by the Vercel
+ 
+ | Mode | Model | Thinking Budget | Temperature | Max Steps | Primary Use Case |
+ | --- | --- | --- | --- | --- | --- |
+-| **fast** | `gemini-2.0-flash-exp` | 0 | 0.7 | 3 | Quick scaffolds, simple edits |
+-| **balanced** | `gemini-2.5-flash` | 2048 | 0.5 | 5 | General development with reasoning |
+-| **deep** | `gemini-2.5-pro` | 8192 | 0.3 | 10 | Complex planning, architecture, debugging |
++| **fast** | `gemini-2.0-flash` | 0 | 0.7 | 3 | Quick scaffolds, simple edits |
++| **balanced** | `gemini-2.0-flash-thinking-exp` | 2048 | 0.5 | 5 | General development with reasoning |
++| **deep** | `gemini-2.5-pro-exp` | 8192 | 0.3 | 10 | Complex planning, architecture, debugging |
+ 
+ > **Thinking budget** controls model-side chain-of-thought allocation. Higher budgets improve plan quality at the cost of latency. Only deep mode exposes `includeThoughts` metadata for telemetry.
+ 
+@@ -358,11 +358,21 @@ const workspace = await db.get('state', 'workspace');
+ ## Appendix: Reference Snippets
+ 
+ ```ts
++import { createGoogleGenerativeAI } from '@ai-sdk/google';
++import { streamText } from 'ai';
++
++const google = createGoogleGenerativeAI({
++  apiKey:
++    process.env.GOOGLE_API_KEY ??
++    process.env.GOOGLE_GENERATIVE_AI_API_KEY ??
++    process.env.GEMINI_API_KEY!,
++});
++
+ // Mode configuration
+ const MODES = {
+-  fast:     { model: 'gemini-2.0-flash-exp', thinking: 0,    temp: 0.7 },
+-  balanced: { model: 'gemini-2.5-flash',      thinking: 2048, temp: 0.5 },
+-  deep:     { model: 'gemini-2.5-pro',        thinking: 8192, temp: 0.3 },
++  fast:     { model: 'gemini-2.0-flash',             thinking: 0,    temp: 0.7 },
++  balanced: { model: 'gemini-2.0-flash-thinking-exp', thinking: 2048, temp: 0.5 },
++  deep:     { model: 'gemini-2.5-pro-exp',           thinking: 8192, temp: 0.3 },
+ } as const;
+ 
+ // Example system prompt builder
+diff --git a/package-lock.json b/package-lock.json
+index 6411a23..905ae06 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -9,6 +9,7 @@
+       "version": "1.0.0",
+       "dependencies": {
+         "@ai-sdk/cohere": "^2.0.12",
++        "@ai-sdk/google": "^2.0.17",
+         "@ai-sdk/groq": "^2.0.22",
+         "@types/node": "^20.11.30",
+         "@webcontainer/api": "^1.1.9",
+@@ -78,6 +79,39 @@
+         "zod": "^3.25.76 || ^4.1.8"
+       }
+     },
++    "node_modules/@ai-sdk/google": {
++      "version": "2.0.17",
++      "resolved": "https://registry.npmjs.org/@ai-sdk/google/-/google-2.0.17.tgz",
++      "integrity": "sha512-6LyuUrCZuiULg0rUV+kT4T2jG19oUntudorI4ttv1ARkSbwl8A39ue3rA487aDDy6fUScdbGFiV5Yv/o4gidVA==",
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@ai-sdk/provider": "2.0.0",
++        "@ai-sdk/provider-utils": "3.0.10"
++      },
++      "engines": {
++        "node": ">=18"
++      },
++      "peerDependencies": {
++        "zod": "^3.25.76 || ^4.1.8"
++      }
++    },
++    "node_modules/@ai-sdk/google/node_modules/@ai-sdk/provider-utils": {
++      "version": "3.0.10",
++      "resolved": "https://registry.npmjs.org/@ai-sdk/provider-utils/-/provider-utils-3.0.10.tgz",
++      "integrity": "sha512-T1gZ76gEIwffep6MWI0QNy9jgoybUHE7TRaHB5k54K8mF91ciGFlbtCGxDYhMH3nCRergKwYFIDeFF0hJSIQHQ==",
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@ai-sdk/provider": "2.0.0",
++        "@standard-schema/spec": "^1.0.0",
++        "eventsource-parser": "^3.0.5"
++      },
++      "engines": {
++        "node": ">=18"
++      },
++      "peerDependencies": {
++        "zod": "^3.25.76 || ^4.1.8"
++      }
++    },
+     "node_modules/@ai-sdk/groq": {
+       "version": "2.0.22",
+       "resolved": "https://registry.npmjs.org/@ai-sdk/groq/-/groq-2.0.22.tgz",
+diff --git a/package.json b/package.json
+index eec8c53..63f603d 100644
+--- a/package.json
++++ b/package.json
+@@ -13,10 +13,12 @@
+     "build:server": "tsc --project tsconfig.server.json",
+     "preview": "npm run build && concurrently \"node dist/server/index.js\" \"vite preview --host\"",
+     "lint": "eslint .",
++    "test": "npm run lint",
+     "check:maintenance": "tsx scripts/check-maintenance.ts"
+   },
+   "dependencies": {
+     "@ai-sdk/cohere": "^2.0.12",
++    "@ai-sdk/google": "^2.0.17",
+     "@ai-sdk/groq": "^2.0.22",
+     "@types/node": "^20.11.30",
+     "@webcontainer/api": "^1.1.9",
+diff --git a/server/lib/chat.ts b/server/lib/chat.ts
+index 416f528..9849952 100644
+--- a/server/lib/chat.ts
++++ b/server/lib/chat.ts
+@@ -16,6 +16,9 @@ export class ModelResponseValidationError extends Error {
+   }
+ }
+ 
++/**
++ * Invokes the configured language model to produce a structured assistant response.
++ */
+ export async function generateAssistantResponse(
+   model: LanguageModel,
+   request: ChatRequest
+diff --git a/server/lib/modelFactory.ts b/server/lib/modelFactory.ts
+index d519d83..35a087e 100644
+--- a/server/lib/modelFactory.ts
++++ b/server/lib/modelFactory.ts
+@@ -1,17 +1,31 @@
+ import type { LanguageModel } from 'ai';
+ import { createCohere } from '@ai-sdk/cohere';
++import { createGoogleGenerativeAI } from '@ai-sdk/google';
+ import { createGeminiProvider } from 'ai-sdk-provider-gemini-cli';
+ import { createGroq } from '@ai-sdk/groq';
+ 
++/**
++ * Supported authentication strategies for Google Generative AI (Gemini).
++ */
+ export type GeminiAuthType = 'oauth-personal' | 'api-key' | 'gemini-api-key';
+ export type ProviderName = 'gemini' | 'groq' | 'cohere';
+ 
++/**
++ * Structured result returned when building a model factory.
++ */
+ export interface ModelFactoryResult {
+   modelFactory: (() => LanguageModel) | null;
+   providerName: ProviderName;
+   warnings: string[];
+ }
+ 
++/**
++ * Creates a language model factory based on the configured AI provider.
++ *
++ * The implementation mirrors the provider guidance from the Vercel AI SDK
++ * documentation while preserving the legacy Gemini CLI OAuth flow so existing
++ * environments continue to function without breaking changes.
++ */
+ export function createModelFactory(): ModelFactoryResult {
+   const providerNameEnv = process.env.AI_PROVIDER;
+   const providerName: ProviderName =
+@@ -49,28 +63,32 @@ export function createModelFactory(): ModelFactoryResult {
+   }
+ 
+   const geminiAuthTypeEnv = process.env.GEMINI_AUTH_TYPE as GeminiAuthType | undefined;
+-  const geminiApiKey = process.env.GEMINI_API_KEY ?? process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+-  const geminiAuthType: GeminiAuthType = geminiAuthTypeEnv ?? (geminiApiKey ? 'api-key' : 'oauth-personal');
+-  const missingGeminiApiKey = geminiAuthType !== 'oauth-personal' && !geminiApiKey;
++  const googleGenerativeAiApiKey =
++    process.env.GEMINI_API_KEY ??
++    process.env.GOOGLE_GENERATIVE_AI_API_KEY ??
++    process.env.GOOGLE_API_KEY;
++
++  const geminiAuthType: GeminiAuthType =
++    geminiAuthTypeEnv ?? (googleGenerativeAiApiKey ? 'api-key' : 'oauth-personal');
++
++  const missingGeminiApiKey = geminiAuthType !== 'oauth-personal' && !googleGenerativeAiApiKey;
+ 
+   if (missingGeminiApiKey) {
+     warnings.push(
+-      'Missing GEMINI_API_KEY environment variable. Configure GEMINI_API_KEY or switch GEMINI_AUTH_TYPE to "oauth-personal" to enable AI features.'
++      'Missing Google Generative AI API key. Configure GEMINI_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, or GOOGLE_API_KEY, or switch GEMINI_AUTH_TYPE to "oauth-personal" to enable AI features.'
+     );
+   }
+ 
+-  const gemini = !missingGeminiApiKey
+-    ? createGeminiProvider(
+-        geminiAuthType === 'oauth-personal'
+-          ? { authType: 'oauth-personal' }
+-          : { authType: geminiAuthType, apiKey: geminiApiKey as string }
+-      )
++  const googleGenerativeAi = !missingGeminiApiKey
++    ? geminiAuthType === 'oauth-personal'
++      ? createGeminiProvider({ authType: 'oauth-personal' })
++      : createGoogleGenerativeAI({ apiKey: googleGenerativeAiApiKey as string })
+     : null;
+ 
+   const geminiModelName = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
+ 
+-  if (gemini) {
+-    modelFactory = () => gemini(geminiModelName) as unknown as LanguageModel;
++  if (googleGenerativeAi) {
++    modelFactory = () => googleGenerativeAi(geminiModelName) as unknown as LanguageModel;
+   }
+ 
+   return { modelFactory, providerName, warnings };
+diff --git a/src/lib/aiClient.ts b/src/lib/aiClient.ts
+index 3ba91cb..2212eb2 100644
+--- a/src/lib/aiClient.ts
++++ b/src/lib/aiClient.ts
+@@ -1,5 +1,8 @@
+ import { ChatRequestPayload, AiActionResponse } from './types';
+ 
++/**
++ * Sends a chat payload to the backend API and returns the AI action response.
++ */
+ export async function requestAiActions(payload: ChatRequestPayload): Promise<AiActionResponse> {
+   const response = await fetch('/api/chat', {
+     method: 'POST',

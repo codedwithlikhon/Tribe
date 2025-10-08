@@ -16,6 +16,9 @@ export class ModelResponseValidationError extends Error {
   }
 }
 
+/**
+ * Invokes the configured language model to produce a structured assistant response.
+ */
 export async function generateAssistantResponse(
   model: LanguageModel,
   request: ChatRequest
