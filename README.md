@@ -8,11 +8,12 @@ An AI-powered developer companion that combines the [Tribe WebContainer Runtime]
 
 - **WebContainer orchestration** – Boot, manage, and teardown a WebContainer workspace directly from the chat UI.
 - **AI-guided workflows** – Uses Gemini 2.5 Flash via the `ai-sdk-provider-gemini-cli` provider and structured outputs to generate actionable instructions.
+- **Design-forward scaffolds** – Natural language prompts default to production-ready Next.js 15 + Tailwind CSS + shadcn/ui workspaces enriched with Geist tokens.
 - **Groq + Gemini + Cohere flexibility** – Switch between Gemini, Groq, or Cohere large language models by configuring environment variables.
 - **File system management** – Create, edit, and delete files/folders using natural language commands or the built-in editor.
 - **Command execution** – Run arbitrary shell commands (`npm install`, `npm run dev`, etc.) with realtime terminal output.
 - **Live preview** – Automatically capture dev-server previews and stream them inside the app.
-- **Error handling & logging** – Surface validation issues, process crashes, and AI errors with detailed context.
+- **Error handling & logging** – Surface validation issues, process crashes, and AI errors with shadcn/ui alerts and detailed context.
 - **Multi-language support** – The sandbox can host Node.js, React, Express, Vite, or any framework supported by npm packages.
 
 ## Project structure

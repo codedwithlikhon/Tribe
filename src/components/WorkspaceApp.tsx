@@ -8,8 +8,9 @@ import { TerminalPanel } from './TerminalPanel';
 import { useWebContainer } from '../hooks/useWebContainer';
 import { requestAiActions } from '../lib/aiClient';
 import type { ActionResult, ChatMessage, ChatRequestPayload, FileNode } from '../lib/types';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
-const SYSTEM_MESSAGE = `You are Tribe, an AI pair programmer that controls a WebContainer sandbox running entirely inside the user's browser.\n\nThe user can run npm/yarn/pnpm commands, scaffold projects, edit files, and open previews.\n\nReturn a JSON object that matches the provided schema. Focus on actionable instructions. Use runCommand when dependencies need to be installed or dev servers started. Always include a helpful natural language reply in the reply field. Keep file contents compact when possible.`;
+const SYSTEM_MESSAGE = `You are Tribe, an AI pair programmer that controls a WebContainer sandbox running entirely inside the user's browser.\n\nAlways scaffold production-ready Next.js 15 applications styled with Tailwind CSS, shadcn/ui, and Geist design tokens unless the user explicitly requests another stack.\n\nReturn a JSON object that matches the provided schema. Focus on actionable instructions. Use runCommand when dependencies need to be installed or dev servers started. Always include a helpful natural language reply in the reply field. Keep file contents compact when possible.`;
 
 interface WorkspaceAppProps {
   onExit: () => void;
@@ -126,7 +127,12 @@ export function WorkspaceApp({ onExit }: WorkspaceAppProps) {
           <div className="status-bar">
             Status: <strong>{status}</strong>
           </div>
-          {error ? <div className="action-log-entry">{error}</div> : null}
+          {error ? (
+            <Alert variant="destructive" role="alert">
+              <AlertTitle>Workspace error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : null}
           <FileExplorer tree={fileTree} selectedPath={selectedFilePath} onSelect={handleSelectFile} />
         </aside>
         <main className="main-content">

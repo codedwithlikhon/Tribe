@@ -10,7 +10,7 @@ const featureHighlights = [
     icon: SparklesIcon,
     title: 'Chat-first workflows',
     description:
-      'Describe your idea in natural language and Tribe scaffolds the project, installs dependencies, and runs commands for you.',
+      'Describe your idea in natural language and Tribe scaffolds production-ready Next.js 15 + Tailwind + shadcn/ui projects, installs dependencies, and runs commands for you.',
   },
   {
     icon: Code2Icon,
@@ -92,8 +92,8 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
               <div className="landing-chat-message assistant">
                 <span>Tribe</span>
                 <p>
-                  Absolutely. I will create a Vite + React project, install Tailwind, and wire up a hero section with a live
-                  preview.
+                  Absolutely. I will create a Next.js 15 app with Tailwind CSS, shadcn/ui, and Geist tokens, then wire up a hero
+                  section with a live preview.
                 </p>
               </div>
               <div className="landing-chat-message assistant">
@@ -110,7 +110,7 @@ export function LandingPage({ onLaunch }: LandingPageProps) {
               <div className="landing-preview-window">
                 <div className="landing-preview-bar" />
                 <div className="landing-preview-body">
-                  <div className="landing-preview-chip">Vite dev server</div>
+                  <div className="landing-preview-chip">Next.js dev server</div>
                   <h3>Instant updates</h3>
                   <p>Every code change is reflected immediately in your embedded preview.</p>
                   <div className="landing-preview-buttons">
