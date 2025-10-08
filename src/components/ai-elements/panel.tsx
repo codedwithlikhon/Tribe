@@ -1,9 +1,6 @@
 import type { ComponentProps } from 'react';
 import { Panel as ReactFlowPanel } from '@xyflow/react';
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
-}
+import { cn } from '@/utils/cn';
 
 export type PanelPosition =
   | 'top-left'

@@ -1,9 +1,6 @@
 import type { ComponentProps } from 'react';
 import { Controls as ReactFlowControls } from '@xyflow/react';
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
-}
+import { cn } from '@/utils/cn';
 
 export type ControlsProps = ComponentProps<typeof ReactFlowControls> & {
   className?: string;

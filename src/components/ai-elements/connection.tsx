@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react';
+import { cn } from '@/utils/cn';
 
 type ConnectionProps = {
   fromX: number;
@@ -7,10 +8,6 @@ type ConnectionProps = {
   toY: number;
   className?: string;
 };
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ');
-}
 
 const clamp = (value: number, min: number, max: number) => {
   return Math.min(Math.max(value, min), max);
