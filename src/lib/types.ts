@@ -1,4 +1,15 @@
-export type ChatRole = 'user' | 'assistant' | 'system';
+import type { AgentRole } from '../types/messages';
+import type {
+  WorkspaceEntry,
+  WorkspaceState,
+  WorkspaceOperation,
+  WorkspaceSnapshot,
+  WorkspaceFile,
+  WorkspaceDirectory,
+} from '../types/workspace';
+import type { ToolInvocation, ToolResult } from '../types/tools';
+
+export type ChatRole = Extract<AgentRole, 'user' | 'assistant' | 'system'>;
 
 export interface ChatMessage {
   id: string;
@@ -6,23 +17,13 @@ export interface ChatMessage {
   content: string;
   actions?: ActionResult[];
   error?: string;
+  createdAt?: number;
+  metadata?: Record<string, string | number | boolean>;
 }
 
-export type FileNode = {
-  type: 'file';
-  path: string;
-  name: string;
-  content: string;
-};
-
-export type DirectoryNode = {
-  type: 'directory';
-  path: string;
-  name: string;
-  children: Array<FileNode | DirectoryNode>;
-};
-
-export type ProjectTree = DirectoryNode;
+export type FileNode = WorkspaceFile;
+export type DirectoryNode = WorkspaceDirectory;
+export type ProjectTree = WorkspaceDirectory;
 
 export type ActionResult =
   | {
@@ -50,6 +51,8 @@ export type ActionResult =
 export interface AiActionResponse {
   reply: string;
   actions: ActionResult[];
+  toolCalls?: ToolInvocation[];
+  toolResults?: ToolResult[];
 }
 
 export interface FileSummary {
@@ -66,4 +69,16 @@ export interface ChatRequestPayload {
     dependencies: string[];
   };
   userMessage: string;
+  mode?: string;
 }
+
+export type {
+  WorkspaceEntry,
+  WorkspaceState,
+  WorkspaceOperation,
+  WorkspaceSnapshot,
+  WorkspaceFile,
+  WorkspaceDirectory,
+  ToolInvocation,
+  ToolResult,
+};
